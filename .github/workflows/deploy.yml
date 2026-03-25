@@ -21,13 +21,10 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish Blazor WASM
-        run: dotnet publish -c Release -o release
+        run: dotnet publish QuizGame.csproj -c Release -o release
 
       - name: Add .nojekyll
         run: touch release/wwwroot/.nojekyll
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: release/wwwroot
