@@ -1,0 +1,691 @@
+﻿@page "/quiz"
+@using QuizApp.Models
+
+<div class="quiz-page">
+    <div class="quiz-card">
+        <h1>Test-dugga</h1>
+        <p class="quiz-meta">
+            Maxpoäng: @MaxPoints p | Godkänt: @PassingPoints p (@PassingPercent%)
+        </p>
+
+        @if (!isFinished)
+        {
+            var question = CurrentQuestion;
+
+            <p class="question-count">Fråga @(currentIndex + 1) / @questions.Count</p>
+            <p class="question-points">Del @GetSectionName(question.Type) – @question.Points p</p>
+
+            <h2 class="question-title">@question.Title</h2>
+
+            @if (!string.IsNullOrWhiteSpace(question.Prompt))
+            {
+                <p class="question-prompt">@question.Prompt</p>
+            }
+
+            @if (!answerSubmitted)
+            {
+                @if (question.Type == QuestionType.SingleChoice)
+                {
+                    <p class="pick-text">Välj ett svar</p>
+
+                    <div class="options">
+                        @for (int i = 0; i < question.Options.Count; i++)
+                        {
+                            int index = i;
+
+                            <button type="button"
+                                    class="option-btn @(selectedSingleIndex == index ? "selected" : "")"
+                                    @onclick="@(() => SelectSingleOption(index))">
+                                @question.Options[i].Text
+                            </button>
+                        }
+                    </div>
+
+                    <button class="submit-btn"
+                            @onclick="SubmitAnswer"
+                            disabled="@(selectedSingleIndex is null)">
+                        Submit Answer
+                    </button>
+                }
+                else if (question.Type == QuestionType.MultipleChoice)
+                {
+                    <p class="pick-text">Välj alla som stämmer</p>
+
+                    <div class="options">
+                        @for (int i = 0; i < question.Options.Count; i++)
+                        {
+                            int index = i;
+
+                            <button type="button"
+                                    class="option-btn @(selectedMultipleIndices.Contains(index) ? "selected" : "")"
+                                    @onclick="@(() => ToggleMultipleOption(index))">
+                                @question.Options[i].Text
+                            </button>
+                        }
+                    </div>
+
+                    <button class="submit-btn"
+                            @onclick="SubmitAnswer"
+                            disabled="@(!selectedMultipleIndices.Any())">
+                        Submit Answer
+                    </button>
+                }
+                else if (question.Type == QuestionType.Text)
+                {
+                    <p class="pick-text">Skriv ditt svar</p>
+
+                    <textarea class="text-answer"
+                              @bind="textAnswer"
+                              placeholder="Skriv ditt svar här..."></textarea>
+
+                    <button class="submit-btn"
+                            @onclick="SubmitAnswer"
+                            disabled="@string.IsNullOrWhiteSpace(textAnswer)">
+                        Submit Answer
+                    </button>
+                }
+            }
+            else
+            {
+                <div class="feedback-box @(lastAnswerCorrect ? "correct-box" : "wrong-box")">
+                    <h3>@(lastAnswerCorrect ? $"Rätt! +{question.Points}p 🎉" : "Fel ❌")</h3>
+
+                    @if (question.Type == QuestionType.Text)
+                    {
+                        <p><strong>Godkända svar / nyckelidéer:</strong> @string.Join(" | ", question.AcceptedAnswers)</p>
+                    }
+                    else
+                    {
+                        <p><strong>Rätt svar:</strong> @GetCorrectAnswersText(question)</p>
+                    }
+                </div>
+
+                <button class="next-btn" @onclick="NextQuestion">
+                    @(currentIndex == questions.Count - 1 ? "Visa resultat" : "Nästa fråga")
+                </button>
+            }
+        }
+        else
+        {
+            <div class="final-result">
+                <h2>Quiz klart</h2>
+                <p class="final-score">Du fick <strong>@score / @MaxPoints</strong> poäng</p>
+
+                <p class="final-status @(score >= PassingPoints ? "pass" : "fail")">
+                    @(score >= PassingPoints ? "Godkänd" : "Inte godkänd")
+                </p>
+
+                <button class="next-btn" @onclick="RestartQuiz">Börja om</button>
+            </div>
+        }
+
+        <p class="running-score">Poäng hittills: @score / @MaxPoints</p>
+    </div>
+</div>
+
+@code {
+    private List<QuizQuestion> questions = new();
+    private int currentIndex = 0;
+    private int score = 0;
+    private bool isFinished = false;
+
+    private bool answerSubmitted = false;
+    private bool lastAnswerCorrect = false;
+
+    private int? selectedSingleIndex = null;
+    private HashSet<int> selectedMultipleIndices = new();
+    private string textAnswer = string.Empty;
+
+    private QuizQuestion CurrentQuestion => questions[currentIndex];
+
+    private int MaxPoints => questions.Sum(q => q.Points);
+    private int PassingPoints => (int)Math.Ceiling(MaxPoints * 0.60);
+    private int PassingPercent => 60;
+
+    protected override void OnInitialized()
+    {
+        questions = new List<QuizQuestion>
+        {
+            new QuizQuestion
+            {
+                Id = 1,
+                Title = "1) Vad beskriver arv korrekt?",
+                Type = QuestionType.SingleChoice,
+                Points = 1,
+                Options = new()
+                {
+                    new QuizOption { Text = "Arv skapar relationen ”är-en / is-a”", IsCorrect = true },
+                    new QuizOption { Text = "Arv används för att minska koppling", IsCorrect = false },
+                    new QuizOption { Text = "Arv innebär alltid bättre prestanda", IsCorrect = false },
+                    new QuizOption { Text = "Arv och komposition är samma sak", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 2,
+                Title = "2) Vilka påståenden om komposition är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "Komposition modellerar ”del-av / has-a” (där helheten äger delarnas livscykel)", IsCorrect = true },
+                    new QuizOption { Text = "Komposition ger i regel lägre koppling än arv", IsCorrect = true },
+                    new QuizOption { Text = "Komposition kräver multipelt arv", IsCorrect = false },
+                    new QuizOption { Text = "Komposition gör kod omöjlig att testa", IsCorrect = false },
+                    new QuizOption { Text = "Komposition används främst för UI-komponenter", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 3,
+                Title = "3) Vad är syftet med en pull request (PR)?",
+                Type = QuestionType.SingleChoice,
+                Points = 1,
+                Options = new()
+                {
+                    new QuizOption { Text = "Möjliggöra kodgranskning", IsCorrect = true },
+                    new QuizOption { Text = "Tillåta merge även med olösta konflikter", IsCorrect = false },
+                    new QuizOption { Text = "Kräva att repot är privat", IsCorrect = false },
+                    new QuizOption { Text = "Rensa bort commits i historiken", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 4,
+                Title = "4) Vilka påståenden om async och await i C# är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "async innebär att metoden kan innehålla await", IsCorrect = true },
+                    new QuizOption { Text = "await gör att metoden inte blockerar tråden medan den väntar", IsCorrect = true },
+                    new QuizOption { Text = "async gör att koden automatiskt körs i en separat tråd", IsCorrect = false },
+                    new QuizOption { Text = "async används för att skriva kod som inte låser gränssnittet (UI)", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 5,
+                Title = "5) Vilka HTTP-statuskoder och betydelser är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "400 – valideringsfel", IsCorrect = true },
+                    new QuizOption { Text = "204 – lyckad radering utan innehåll", IsCorrect = true },
+                    new QuizOption { Text = "404 – konflikt i tillstånd", IsCorrect = false },
+                    new QuizOption { Text = "409 – resurs saknas", IsCorrect = false },
+                    new QuizOption { Text = "201 – uppdaterad resurs", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 6,
+                Title = "6) Vilka påståenden om entiteter är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "De bör ha en primärnyckel", IsCorrect = true },
+                    new QuizOption { Text = "De kan vara klasser eller records", IsCorrect = true },
+                    new QuizOption { Text = "De måste alltid ha virtuella metoder", IsCorrect = false },
+                    new QuizOption { Text = "De måste alltid ha navigation properties", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 7,
+                Title = "7) Vad krävs för att spara ändringar i databasen med EF Core?",
+                Type = QuestionType.SingleChoice,
+                Points = 1,
+                Options = new()
+                {
+                    new QuizOption { Text = "Att anropa SaveChanges()", IsCorrect = true },
+                    new QuizOption { Text = "Att konfigurera en DbSet", IsCorrect = false },
+                    new QuizOption { Text = "Att köra en migration", IsCorrect = false },
+                    new QuizOption { Text = "Att skapa en ny DbContext instans", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 8,
+                Title = "8) Vilka påståenden om Blazor-komponenter är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "De består av markup + C#", IsCorrect = true },
+                    new QuizOption { Text = "De kan trigga omrendering vid state-ändring", IsCorrect = true },
+                    new QuizOption { Text = "De är statiska .cs klasser", IsCorrect = false },
+                    new QuizOption { Text = "De består endast av markup (ingen C#-kod)", IsCorrect = false },
+                    new QuizOption { Text = "De saknar livscykelmetoder", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 9,
+                Title = "9) Vad innebär autentisering?",
+                Type = QuestionType.SingleChoice,
+                Points = 1,
+                Options = new()
+                {
+                    new QuizOption { Text = "Autentisering används för att avgöra vem användaren är", IsCorrect = true },
+                    new QuizOption { Text = "Autentisering bestämmer vad användaren får göra", IsCorrect = false },
+                    new QuizOption { Text = "Autentisering används endast i UI-lager", IsCorrect = false },
+                    new QuizOption { Text = "Autentisering lägger till extra roller", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 10,
+                Title = "10) Vilka påståenden om policies och auktorisering är korrekta?",
+                Type = QuestionType.MultipleChoice,
+                Points = 2,
+                Options = new()
+                {
+                    new QuizOption { Text = "Policies styr behörighet", IsCorrect = true },
+                    new QuizOption { Text = "Policies kan användas för att definiera behörigheter", IsCorrect = true },
+                    new QuizOption { Text = "Policies kan uttryckas med claims och/eller roller", IsCorrect = false },
+                    new QuizOption { Text = "Fel behörighet ska ge HTTP 401", IsCorrect = false },
+                    new QuizOption { Text = "Auktorisering påverkar endast UI, inte API", IsCorrect = false }
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 11,
+                Title = "11) Varför används feature branches i Git?",
+                Type = QuestionType.Text,
+                Points = 2,
+                AcceptedAnswers = new()
+                {
+                    "separata utvecklingslinjer",
+                    "utveckla och testa funktioner isolerat",
+                    "skyddar main",
+                    "pull request",
+                    "kodgranskning"
+                },
+                Keywords = new()
+                {
+                    "separat utvecklingslinje",
+                    "separat utvecklingslinjer",
+                    "ändras",
+                    "skydda",
+                    "pull request",
+                    "kodgranskning",
+                    "main"
+                },
+            },
+            new QuizQuestion
+            {
+                Id = 12,
+                Title = "12) Förklara skillnaden mellan arv och komposition.",
+                Type = QuestionType.Text,
+                Points = 4,
+                AcceptedAnswers = new()
+                {
+                    "arv är en är-en relation",
+                    "komposition är en har-en relation",
+                    "arv används när en klass är en specialisering av en annan",
+                    "komposition bygger upp objekt av delar",
+                    "komposition ger lägre koppling",
+                    "mer flexibel kod"
+                },
+                    Keywords = new()
+                    {
+                        "arv",
+                        "komposition",
+                        "är en",
+                        "har en",
+                        "specialisering",
+                        "del av",
+                        "has a",
+                        "is a"
+                    },
+            },
+            new QuizQuestion
+{
+    Id = 13,
+    Title = "13) Förklara vad en many-to-one-relation är.",
+    Type = QuestionType.Text,
+    Points = 4,
+    AcceptedAnswers = new()
+    {
+        "många entiteter relaterar till en annan entitet",
+        "många pekar på en",
+        "foreign key på many-sidan",
+        "många böcker till en kategori"
+    },
+    Keywords = new()
+    {
+        "många",
+        "en",
+        "one",
+        "user",
+        "användare",
+        "kategori",
+        "relation",
+        "tillhör",
+        "pekar"
+    },
+    RequiredKeywordMatches = 2
+},
+            new QuizQuestion
+            {
+                Id = 14,
+                Title = "14) Förklara vad migrationer i Entity Framework är och hur de används.",
+                Type = QuestionType.Text,
+                Points = 4,
+                AcceptedAnswers = new()
+                {
+                    "hantera förändringar i databasschemat",
+                    "ändringar i modeller i koden blir migrationer",
+                    "skapa migration",
+                    "database update applicerar ändringen till databasen"
+                },
+                Keywords = new()
+                {
+                    "migration",
+                    "förändring",
+                    "databasschema",
+                    "modell",
+                    "skapa",
+                    "updatering",
+                    "databas",
+                    "spara"
+                },
+            },
+            new QuizQuestion
+            {
+                Id = 15,
+                Title = "15) Vad betyder HTTP-statuskoden 403?",
+                Type = QuestionType.Text,
+                Points = 3,
+                AcceptedAnswers = new()
+                {
+                    "forbidden",
+                    "användaren är autentiserad men saknar behörighet",
+                    "åtkomst nekas",
+                    "skillnad mot 401"
+                },
+                Keywords = new()
+                {
+                    "403",
+                    "forbidden",
+                    "autentiserad",
+                    "behörighet",
+                    "åtkomst nekas",
+                    "saknar",
+                    "användaren"
+                },
+            },
+            new QuizQuestion
+            {
+                Id = 16,
+                Title = "16) Vad är ett API-kontrakt?",
+                Type = QuestionType.Text,
+                Points = 3,
+                AcceptedAnswers = new()
+                {
+                    "regler för hur klient och api kommunicerar",
+                    "endpoints",
+                    "request och response format",
+                    "förutsägbar integration"
+                },
+                Keywords = new()
+                {
+                    "api-kontrakt",
+                    "HTTP",
+                    "endpoints",
+                    "request",
+                    "response",
+                    "statuskoder"
+                },
+            },
+            new QuizQuestion
+            {
+                Id = 17,
+                Title = "17) Förklara hur GetTitleAsync är designad / vad den gör.",
+                Type = QuestionType.Text,
+                Points = 5,
+                AcceptedAnswers = new()
+                {
+                    "asynkron metod",
+                    "validerar input",
+                    "hanterar null eller whitespace",
+                    "returnerar standardvärdet n/a",
+                    "trimmar whitespace",
+                    "formaterar output",
+                    "robust och förutsägbar"
+                }
+            },
+            new QuizQuestion
+            {
+                Id = 18,
+                Title = "18) Vad gör ToListAsync()?",
+                Type = QuestionType.Text,
+                Points = 2,
+                AcceptedAnswers = new()
+                {
+                    "exekverar frågan asynkront",
+                    "hämtar data från databasen",
+                    "returnerar en lista",
+                    "skapar en lista",
+                    "materialiserar resultatet till en lista"
+                },
+                Keywords = new()
+                {
+                    "ToListAsync",
+                    "ToListAsync()",
+                    "databas",
+                    "lista",
+                    "skapar",
+                    "returnerar",
+                    "hämtar",
+                    "materialiserar"
+
+                },
+            }
+        };
+    }
+
+    private void SelectSingleOption(int index)
+    {
+        if (answerSubmitted)
+            return;
+
+        selectedSingleIndex = index;
+        StateHasChanged();
+    }
+
+    private void ToggleMultipleOption(int index)
+    {
+        if (answerSubmitted)
+            return;
+
+        if (selectedMultipleIndices.Contains(index))
+            selectedMultipleIndices.Remove(index);
+        else
+            selectedMultipleIndices.Add(index);
+
+        StateHasChanged();
+    }
+
+    private void SubmitAnswer()
+    {
+        if (answerSubmitted)
+            return;
+
+        bool isCorrect = false;
+        var question = CurrentQuestion;
+
+        if (question.Type == QuestionType.SingleChoice)
+        {
+            if (selectedSingleIndex is null)
+                return;
+
+            isCorrect = question.Options[selectedSingleIndex.Value].IsCorrect;
+        }
+        else if (question.Type == QuestionType.MultipleChoice)
+        {
+            var correctIndices = question.Options
+                .Select((option, index) => new { option, index })
+                .Where(x => x.option.IsCorrect)
+                .Select(x => x.index)
+                .ToHashSet();
+
+            isCorrect = selectedMultipleIndices.SetEquals(correctIndices);
+        }
+        else if (question.Type == QuestionType.Text)
+        {
+            isCorrect = IsTextAnswerCorrect(textAnswer, question);
+        }
+        else if (question.Type == QuestionType.Text)
+        {
+            int earnedPoints = GetTextAnswerPoints(textAnswer, question);
+            isCorrect = earnedPoints > 0;
+            score += earnedPoints;
+        }
+
+        lastAnswerCorrect = isCorrect;
+
+        if (isCorrect)
+        {
+            score += question.Points;
+        }
+
+        answerSubmitted = true;
+    }
+
+    private bool IsTextAnswerCorrect(string userAnswer, QuizQuestion question)
+    {
+        var normalizedUserAnswer = Normalize(userAnswer);
+
+        if (string.IsNullOrWhiteSpace(normalizedUserAnswer))
+            return false;
+
+        // Om keywords finns, använd dem i första hand
+        if (question.Keywords.Any())
+        {
+            int matchCount = question.Keywords.Count(keyword =>
+                normalizedUserAnswer.Contains(Normalize(keyword)));
+
+            return matchCount >= question.RequiredKeywordMatches;
+        }
+
+        // Fallback till gamla accepted answers
+        int acceptedMatchCount = question.AcceptedAnswers.Count(answer =>
+            normalizedUserAnswer.Contains(Normalize(answer)));
+
+        if (question.AcceptedAnswers.Count == 0)
+            return false;
+
+        return acceptedMatchCount >= 1;
+    }
+
+    private int GetTextAnswerPoints(string userAnswer, QuizQuestion question)
+    {
+        var normalizedUserAnswer = Normalize(userAnswer);
+
+        if (string.IsNullOrWhiteSpace(normalizedUserAnswer) || !question.Keywords.Any())
+            return 0;
+
+        int matchCount = question.Keywords.Count(keyword =>
+            normalizedUserAnswer.Contains(Normalize(keyword)));
+
+        if (matchCount >= question.RequiredKeywordMatches + 1)
+            return question.Points;
+
+        if (matchCount >= question.RequiredKeywordMatches)
+            return Math.Max(1, question.Points / 2);
+
+        return 0;
+    }
+
+    private static string Normalize(string input)
+    {
+        return input.Trim().ToLowerInvariant();
+    }
+
+    private string GetSingleOptionClass(int index)
+    {
+        var option = CurrentQuestion.Options[index];
+
+        if (!answerSubmitted)
+        {
+            return selectedSingleIndex == index ? "selected" : "";
+        }
+
+        if (option.IsCorrect)
+            return "correct";
+
+        if (selectedSingleIndex == index && !option.IsCorrect)
+            return "wrong";
+
+        return "dimmed";
+    }
+
+    private string GetMultipleOptionClass(int index)
+    {
+        var option = CurrentQuestion.Options[index];
+        bool isSelected = selectedMultipleIndices.Contains(index);
+
+        if (!answerSubmitted)
+        {
+            return isSelected ? "selected" : "";
+        }
+
+        if (option.IsCorrect)
+            return "correct";
+
+        if (isSelected && !option.IsCorrect)
+            return "wrong";
+
+        return "dimmed";
+    }
+
+    private string GetCorrectAnswersText(QuizQuestion question)
+    {
+        return string.Join(", ", question.Options.Where(o => o.IsCorrect).Select(o => o.Text));
+    }
+
+    private string GetSectionName(QuestionType type)
+    {
+        return type switch
+        {
+            QuestionType.SingleChoice => "A",
+            QuestionType.MultipleChoice => "A",
+            QuestionType.Text => "B",
+            _ => "?"
+        };
+    }
+
+    private void NextQuestion()
+    {
+        if (currentIndex < questions.Count - 1)
+        {
+            currentIndex++;
+            ResetQuestionState();
+        }
+        else
+        {
+            isFinished = true;
+        }
+    }
+
+    private void RestartQuiz()
+    {
+        currentIndex = 0;
+        score = 0;
+        isFinished = false;
+        ResetQuestionState();
+    }
+
+    private void ResetQuestionState()
+    {
+        answerSubmitted = false;
+        lastAnswerCorrect = false;
+        selectedSingleIndex = null;
+        selectedMultipleIndices.Clear();
+        textAnswer = string.Empty;
+    }
+}
