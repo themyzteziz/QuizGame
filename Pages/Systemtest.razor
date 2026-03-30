@@ -36,6 +36,7 @@
                             <button type="button"
                                     class="option-btn @(answerSubmitted? GetSingleOptionClass(index) : (selectedSingleIndex == index ? "selected" : ""))"
                                     @onclick="@(() => SelectSingleOption(index))">
+                                @question.Options[i].Text
                             </button>
                         }
                     </div>
@@ -58,6 +59,7 @@
                             <button type="button"
                                     class="option-btn @(answerSubmitted? GetMultipleOptionClass(index) : (selectedMultipleIndices.Contains(index) ? "selected" : ""))"
                                     @onclick="@(() => ToggleMultipleOption(index))">
+                                @question.Options[i].Text
                             </button>
                         }
                     </div>
