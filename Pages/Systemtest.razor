@@ -400,6 +400,21 @@ new QuizQuestion
         new QuizOption { Text = "Endast UI", IsCorrect = false },
         new QuizOption { Text = "Endast backend", IsCorrect = false }
     }
+},
+new QuizQuestion
+{
+    Id = 118,
+    Title = "Testpyramiden",
+    Prompt = "Vilken ordning är korrekt i testpyramiden (botten → toppen)?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Unit → Integration → End-to-End", IsCorrect = true },
+        new QuizOption { Text = "Integration → Unit → End-to-End", IsCorrect = false },
+        new QuizOption { Text = "End-to-End → Unit → Integration", IsCorrect = false },
+        new QuizOption { Text = "Unit → End-to-End → Integration", IsCorrect = false }
+    }
 }
         };   
 
