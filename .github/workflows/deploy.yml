@@ -5,10 +5,12 @@ on:
     branches: ["master"]
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,13 +23,24 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Publish Blazor WASM
-        run: dotnet publish -c Release -o release
+        run: dotnet publish QuizGame.csproj -c Release -o release
 
       - name: Add .nojekyll
         run: touch release/wwwroot/.nojekyll
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: release/wwwroot
+          path: release/wwwroot
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
