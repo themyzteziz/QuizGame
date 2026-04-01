@@ -83,7 +83,7 @@ h1 {
     box-shadow: 0 0 0 rgba(0, 0, 0, 0);
 }
 
-    .option-btn:hover:not(:disabled) {
+    .option-btn:hover:not(:disabled):not(.selected):not(.correct):not(.wrong) {
         transform: scale(1.02);
         background: #fff;
     }
