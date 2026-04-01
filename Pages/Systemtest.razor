@@ -147,6 +147,7 @@
         questions = new List<QuizQuestion>
         {
         new QuizQuestion
+
 {
     Id = 101,
     Title = "AAA-principen",
@@ -415,9 +416,37 @@ new QuizQuestion
         new QuizOption { Text = "End-to-End → Unit → Integration", IsCorrect = false },
         new QuizOption { Text = "Unit → End-to-End → Integration", IsCorrect = false }
     }
+},
+new QuizQuestion
+{
+    Id = 119,
+    Title = "Test API Pyramid – ordning",
+    Prompt = "Vilken ordning är korrekt från botten till toppen i API pyramiden?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Unit Tests → API/Integration Tests → GUI/E2E Tests → Manual Tests", IsCorrect = true },
+        new QuizOption { Text = "Manual Tests → GUI Tests → API Tests → Unit Tests", IsCorrect = false },
+        new QuizOption { Text = "API Tests → Unit Tests → GUI Tests → Manual Tests", IsCorrect = false },
+        new QuizOption { Text = "Unit Tests → GUI Tests → API Tests → Manual Tests", IsCorrect = false }
+    }
 }
-        };   
 
+        };   
+        ShuffleQuestions();
+    }
+
+    private void ShuffleQuestions()
+    {
+        var random = new Random();
+
+        foreach (var question in questions)
+        {
+            question.Options = question.Options
+                .OrderBy(x => random.Next())
+                .ToList();
+        }
     }
 
     private void SelectSingleOption(int index)
