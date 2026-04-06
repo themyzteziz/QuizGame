@@ -485,7 +485,21 @@
 
                 },
             }
+
         };
+        ShuffleQuestions();
+    }
+
+    private void ShuffleQuestions()
+    {
+        var random = new Random();
+
+        foreach (var question in questions)
+        {
+            question.Options = question.Options
+                .OrderBy(x => random.Next())
+                .ToList();
+        }
     }
 
     private void SelectSingleOption(int index)
