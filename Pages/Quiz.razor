@@ -149,7 +149,7 @@
             new QuizQuestion
             {
                 Id = 1,
-                Title = "1) Vad beskriver arv korrekt?",
+                Title = "1) Vilket påstående beskriver arv korrekt?",
                 Type = QuestionType.SingleChoice,
                 Points = 1,
                 Options = new()
@@ -163,7 +163,7 @@
             new QuizQuestion
             {
                 Id = 2,
-                Title = "2) Vilka påståenden om komposition är korrekta?",
+                Title = "2) Vad stämmer om composition?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -178,7 +178,7 @@
             new QuizQuestion
             {
                 Id = 3,
-                Title = "3) Vad är syftet med en pull request (PR)?",
+                Title = "3) Vad är huvudsyftet med en pull request?",
                 Type = QuestionType.SingleChoice,
                 Points = 1,
                 Options = new()
@@ -192,7 +192,7 @@
             new QuizQuestion
             {
                 Id = 4,
-                Title = "4) Vilka påståenden om async och await i C# är korrekta?",
+                Title = "4) Vad stämmer om async/await i C#?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -206,7 +206,7 @@
             new QuizQuestion
             {
                 Id = 5,
-                Title = "5) Vilka HTTP-statuskoder och betydelser är korrekta?",
+                Title = "5) Vilket är en korrekt koppling mellan fel och statuskod?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -221,7 +221,7 @@
             new QuizQuestion
             {
                 Id = 6,
-                Title = "6) Vilka påståenden om entiteter är korrekta?",
+                Title = "6) Vilka påståenden stämmer om Entity Framework entiteter?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -235,7 +235,7 @@
             new QuizQuestion
             {
                 Id = 7,
-                Title = "7) Vad krävs för att spara ändringar i databasen med EF Core?",
+                Title = "7) Vad krävs för att EF Core ska skriva ändringar till database?",
                 Type = QuestionType.SingleChoice,
                 Points = 1,
                 Options = new()
@@ -249,7 +249,7 @@
             new QuizQuestion
             {
                 Id = 8,
-                Title = "8) Vilka påståenden om Blazor-komponenter är korrekta?",
+                Title = "8) Vad stämmer om Blazor komponenter?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -264,7 +264,7 @@
             new QuizQuestion
             {
                 Id = 9,
-                Title = "9) Vad innebär autentisering?",
+                Title = "9) Vilket påstående beskriver autentisering korrekt?",
                 Type = QuestionType.SingleChoice,
                 Points = 1,
                 Options = new()
@@ -278,7 +278,7 @@
             new QuizQuestion
             {
                 Id = 10,
-                Title = "10) Vilka påståenden om policies och auktorisering är korrekta?",
+                Title = "10) Vilka påståenden stämmer om auktorisering med Identity/Policies?",
                 Type = QuestionType.MultipleChoice,
                 Points = 2,
                 Options = new()
@@ -293,7 +293,7 @@
             new QuizQuestion
             {
                 Id = 11,
-                Title = "11) Varför används feature branches i Git?",
+                Title = "11) Förklara vad Git feature branches används till.",
                 Type = QuestionType.Text,
                 Points = 2,
                 AcceptedAnswers = new()
@@ -345,7 +345,7 @@
             new QuizQuestion
 {
     Id = 13,
-    Title = "13) Förklara vad en many-to-one-relation är.",
+    Title = "13) Beskriv hur relationen many‑to‑one fungerar i en databasmodell.",
     Type = QuestionType.Text,
     Points = 4,
     AcceptedAnswers = new()
@@ -372,7 +372,7 @@
             new QuizQuestion
             {
                 Id = 14,
-                Title = "14) Förklara vad migrationer i Entity Framework är och hur de används.",
+                Title = "14) Vad gör en migration i EF Core och varför används den?",
                 Type = QuestionType.Text,
                 Points = 4,
                 AcceptedAnswers = new()
@@ -397,7 +397,7 @@
             new QuizQuestion
             {
                 Id = 15,
-                Title = "15) Vad betyder HTTP-statuskoden 403?",
+                Title = "15) Hur bör UI reagera när API:t returnerar 403?",
                 Type = QuestionType.Text,
                 Points = 3,
                 AcceptedAnswers = new()
@@ -421,7 +421,7 @@
             new QuizQuestion
             {
                 Id = 16,
-                Title = "16) Vad är ett API-kontrakt?",
+                Title = "16) Vad menas med kontraktsdriven utveckling för API:er? (1–3 meningar)",
                 Type = QuestionType.Text,
                 Points = 3,
                 AcceptedAnswers = new()
@@ -442,49 +442,89 @@
                 },
             },
             new QuizQuestion
-            {
-                Id = 17,
-                Title = "17) Förklara hur GetTitleAsync är designad / vad den gör.",
-                Type = QuestionType.Text,
-                Points = 5,
-                AcceptedAnswers = new()
-                {
-                    "asynkron metod",
-                    "validerar input",
-                    "hanterar null eller whitespace",
-                    "returnerar standardvärdet n/a",
-                    "trimmar whitespace",
-                    "formaterar output",
-                    "robust och förutsägbar"
-                }
+{
+    Id = 17,
+    Title = "17) Förklara kort vad koden gör.",
+    Prompt = @"public interface ITextSource
+{
+    Task<string?> ReadAsync(string key);
+}
+
+public class TitleLoader
+{
+    private readonly ITextSource _source;
+
+    public TitleLoader(ITextSource source) => _source = source;
+
+    public async Task<string> GetTitleAsync(string key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+            throw new ArgumentException(""key must not be null or contain only whitespace."", nameof(key));
+
+        var text = await _source.ReadAsync(key);
+
+        if (string.IsNullOrWhiteSpace(text))
+            return ""N/A"";
+
+        return text.Trim().ToUpperInvariant();
+    }
+}",
+    Type = QuestionType.Text,
+    Points = 5,
+    AcceptedAnswers = new()
+    {
+        "validerar key",
+        "kastar exception om key är tom eller whitespace",
+        "hämtar text asynkront med ReadAsync",
+        "returnerar n/a om text är tom",
+        "trimmar texten",
+        "gör texten till stora bokstäver"
+    },
+    Keywords = new()
+    {
+        "validerar",
+        "key",
+        "exception",
+        "whitespace",
+        "readasync",
+        "asynkront",
+        "n/a",
+        "trim",
+        "stora bokstäver",
+        "toupperinvariant"
+    },
+    RequiredKeywordMatches = 3
             },
             new QuizQuestion
-            {
-                Id = 18,
-                Title = "18) Vad gör ToListAsync()?",
-                Type = QuestionType.Text,
-                Points = 2,
-                AcceptedAnswers = new()
-                {
-                    "exekverar frågan asynkront",
-                    "hämtar data från databasen",
-                    "returnerar en lista",
-                    "skapar en lista",
-                    "materialiserar resultatet till en lista"
-                },
-                Keywords = new()
-                {
-                    "ToListAsync",
-                    "ToListAsync()",
-                    "databas",
-                    "lista",
-                    "skapar",
-                    "returnerar",
-                    "hämtar",
-                    "materialiserar"
-
-                },
-            }
+    {
+    Id = 18,
+    Title = "18) Vad gör raden kod?",
+    Prompt = "var items = await _context.Products.ToListAsync();",
+    Type = QuestionType.Text,
+    Points = 2,
+    AcceptedAnswers = new()
+    {
+        "hämtar data från databasen",
+        "returnerar en lista",
+        "asynkront",
+        "exekverar frågan",
+        "materialiserar resultatet",
+        "hämtar products och gör det till en lista"
+    },
+    Keywords = new()
+    {
+        "hämtar",
+        "databas",
+        "lista",
+        "asynk",
+        "await",
+        "ToListAsync",
+        "exekverar",
+        "materialiserar",
+        "products"
+    },
+    RequiredKeywordMatches = 2
+}
 
         };
         ShuffleQuestions();
