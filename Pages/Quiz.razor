@@ -19,7 +19,7 @@
 
             @if (!string.IsNullOrWhiteSpace(question.Prompt))
             {
-                <p class="question-prompt">@question.Prompt</p>
+                <pre class="code-block"><code>@question.Prompt</code></pre>
             }
 
             @if (!answerSubmitted)

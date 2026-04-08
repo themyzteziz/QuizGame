@@ -207,6 +207,18 @@ h1 {
 .fail {
     color: #ff3c3c;
 }
+.code-block {
+    text-align: left;
+    background: #111;
+    border: 1px solid #333;
+    padding: 16px;
+    border-radius: 12px;
+    overflow-x: auto;
+    font-family: Consolas, monospace;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+    line-height: 1.4;
+}
 
 @media (max-width: 768px) {
     h1 {
