@@ -422,21 +422,25 @@ new QuizQuestion
     Id = 119,
     Title = "Test API Pyramid – ordning",
     Prompt = "Vilken ordning är korrekt från botten till toppen i API pyramiden?",
-    Type = QuestionType.SingleChoice,
+    Type = QuestionType.Text,
     Points = 1,
-    Options = new()
+    AcceptedAnswers = new()
     {
-        new QuizOption { Text = "Unit Tests → API/Integration Tests → GUI/E2E Tests → Manual Tests", IsCorrect = true },
-        new QuizOption { Text = "Manual Tests → GUI Tests → API Tests → Unit Tests", IsCorrect = false },
-        new QuizOption { Text = "API Tests → Unit Tests → GUI Tests → Manual Tests", IsCorrect = false },
-        new QuizOption { Text = "Unit Tests → GUI Tests → API Tests → Manual Tests", IsCorrect = false }
+        "unit test, API test, GUI test, Manual test"
+    },
+    Keywords = new()
+    {
+        "unit", "api", "gui", "manual", "UNIT", "API", "GUI", "MANUAL"
     }
-}
 
-        };   
+}   
+        };
         ShuffleQuestions();
     }
 
+    
+    
+        
     private void ShuffleQuestions()
     {
         var random = new Random();
