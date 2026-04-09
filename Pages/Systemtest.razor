@@ -240,16 +240,15 @@ new QuizQuestion
 new QuizQuestion
 {
     Id = 107,
-    Title = "Scrum",
-    Prompt = "Vilka roller finns i Scrum?",
-    Type = QuestionType.MultipleChoice,
-    Points = 2,
+    Title = "Vad är Happy Tests?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
     Options = new()
     {
-        new QuizOption { Text = "Product Owner", IsCorrect = true },
-        new QuizOption { Text = "Scrum Master", IsCorrect = true },
-        new QuizOption { Text = "Development Team", IsCorrect = true },
-        new QuizOption { Text = "CEO", IsCorrect = false }
+        new QuizOption { Text = "Testar systemet under normala förhållanden", IsCorrect = true },
+        new QuizOption { Text = "Testar extrema fel", IsCorrect = false },
+        new QuizOption { Text = "Testar säkerhet", IsCorrect = false },
+        new QuizOption { Text = "Testar prestanda", IsCorrect = false }
     }
 },
 new QuizQuestion
@@ -285,16 +284,15 @@ new QuizQuestion
 new QuizQuestion
 {
     Id = 110,
-    Title = "Edge cases",
-    Prompt = "Vilket är ett exempel på ett edge case?",
+    Title = "Vad är Smoke Tests?",
     Type = QuestionType.SingleChoice,
     Points = 1,
     Options = new()
     {
-        new QuizOption { Text = "App körs med full disk", IsCorrect = true },
-        new QuizOption { Text = "Normal användning", IsCorrect = false },
-        new QuizOption { Text = "Happy path", IsCorrect = false },
-        new QuizOption { Text = "Kompilering", IsCorrect = false }
+        new QuizOption { Text = "Snabba tester efter deploy för att se att systemet funkar", IsCorrect = true },
+        new QuizOption { Text = "Djupa tester av alla funktioner", IsCorrect = false },
+        new QuizOption { Text = "Testar UI design", IsCorrect = false },
+        new QuizOption { Text = "Testar databasen", IsCorrect = false }
     }
 },
 new QuizQuestion
@@ -375,16 +373,15 @@ new QuizQuestion
 new QuizQuestion
 {
     Id = 116,
-    Title = "System testing",
-    Prompt = "Vad är system testing?",
-    Type = QuestionType.SingleChoice,
-    Points = 1,
+    Title = "Skillnad mellan System och Acceptance Tests?",
+    Type = QuestionType.MultipleChoice,
+    Points = 2,
     Options = new()
     {
-        new QuizOption { Text = "Test av hela systemet", IsCorrect = true },
-        new QuizOption { Text = "Test av en metod", IsCorrect = false },
-        new QuizOption { Text = "Test av UI endast", IsCorrect = false },
-        new QuizOption { Text = "Test av databasen endast", IsCorrect = false }
+        new QuizOption { Text = "System testas av utvecklare", IsCorrect = true },
+        new QuizOption { Text = "Acceptance testas av kund", IsCorrect = true },
+        new QuizOption { Text = "System testar endast UI", IsCorrect = false },
+        new QuizOption { Text = "Acceptance testar hela systemet", IsCorrect = false }
     }
 },
 new QuizQuestion
@@ -433,7 +430,91 @@ new QuizQuestion
         "unit", "api", "gui", "manual", "UNIT", "API", "GUI", "MANUAL"
     }
 
-}   
+},
+new QuizQuestion
+{
+    Id = 201,
+    Title = "Vad mäter Performance Tests?",
+    Type = QuestionType.MultipleChoice,
+    Points = 2,
+    Options = new()
+    {
+        new QuizOption { Text = "Hastighet", IsCorrect = true },
+        new QuizOption { Text = "Responsiveness", IsCorrect = true },
+        new QuizOption { Text = "Stabilitet", IsCorrect = true },
+        new QuizOption { Text = "UI design", IsCorrect = false }
+    }
+},
+new QuizQuestion
+{
+    Id = 202,
+    Title = "Vad är Load Tests?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Testar systemet under förväntad belastning", IsCorrect = true },
+        new QuizOption { Text = "Testar extrema gränser", IsCorrect = false },
+        new QuizOption { Text = "Testar UI", IsCorrect = false },
+        new QuizOption { Text = "Testar säkerhet", IsCorrect = false }
+    }
+},
+new QuizQuestion
+{
+    Id = 203,
+    Title = "Vad är Stress Tests?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Testar systemets maxgräns", IsCorrect = true },
+        new QuizOption { Text = "Testar normal användning", IsCorrect = false },
+        new QuizOption { Text = "Testar API endpoints", IsCorrect = false },
+        new QuizOption { Text = "Testar UI", IsCorrect = false }
+    }
+},
+new QuizQuestion
+{
+    Id = 204,
+    Title = "Vad är Regression Tests?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Säkerställer att ny kod inte bryter gammal funktionalitet", IsCorrect = true },
+        new QuizOption { Text = "Testar nya features", IsCorrect = false },
+        new QuizOption { Text = "Testar UI", IsCorrect = false },
+        new QuizOption { Text = "Testar databasen", IsCorrect = false }
+    }
+},
+new QuizQuestion
+{
+    Id = 205,
+    Title = "Vad gör Security Tests?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Identifierar sårbarheter", IsCorrect = true },
+        new QuizOption { Text = "Testar UI", IsCorrect = false },
+        new QuizOption { Text = "Testar prestanda", IsCorrect = false },
+        new QuizOption { Text = "Testar databasen", IsCorrect = false }
+    }
+},
+new QuizQuestion
+{
+    Id = 206,
+    Title = "Vad är Exploratory Testing?",
+    Type = QuestionType.SingleChoice,
+    Points = 1,
+    Options = new()
+    {
+        new QuizOption { Text = "Testa utan script och utforska systemet", IsCorrect = true },
+        new QuizOption { Text = "Följa strikt testplan", IsCorrect = false },
+        new QuizOption { Text = "Testa API", IsCorrect = false },
+        new QuizOption { Text = "Testa databasen", IsCorrect = false }
+    }
+}
         };
         ShuffleQuestions();
     }
